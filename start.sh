@@ -137,7 +137,7 @@ nginx -g "daemon off;" &
 NGINX_PID=$!
 
 cleanup() {
-    trap - EXIT TERM INT USR1 USR2 USR3
+    trap - EXIT TERM INT USR1 USR2 HUP
 
     echo "Stopping managed services..."
 
