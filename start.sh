@@ -167,7 +167,7 @@ trap 'exit 143' TERM
 trap 'exit 130' INT
 trap 'restart_xray || true' USR1
 trap 'restart_sni || true' USR2
-trap 'restart_aether || true' USR3
+trap 'restart_aether || true' HUP
 
 while kill -0 "$XRAY_PID" 2>/dev/null &&
       kill -0 "$SNI_PID" 2>/dev/null &&
