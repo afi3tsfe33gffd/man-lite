@@ -1,8 +1,12 @@
-
 #!/bin/sh
 set -eu
 
 export NGINX_PORT="${NGINX_PORT:-3000}"
+
+# Environment switches: 1 = enabled, 0/empty/unset = disabled
+ENABLE_USR2_SNI="${ENABLE_USR2_SNI:-0}"
+ENABLE_HUP_AETHER_PSIPHON="${ENABLE_HUP_AETHER_PSIPHON:-0}"
+ENABLE_PWR_AETHER_WG="${ENABLE_PWR_AETHER_WG:-0}"
 
 AETHER_BIN="/usr/local/bin/aether"
 AETHER_BIND="127.0.0.1:1820"
@@ -57,6 +61,11 @@ start_sni() {
 }
 
 restart_sni() {
+    [ "$ENABLE_USR2_SNI" = "1" ] || {
+        echo "SNI is disabled."
+        return 0
+    }
+
     echo "Validating SNI configuration..."
 
     if ! jq -e 'type == "object" and (.listeners | type == "array")' \
@@ -119,6 +128,11 @@ stop_aether() {
 }
 
 restart_aether() {
+    [ "$ENABLE_HUP_AETHER_PSIPHON" = "1" ] || {
+        echo "Aether Psiphon is disabled."
+        return 0
+    }
+
     echo "Restarting Aether Psiphon..."
     stop_aether
     sleep 1
@@ -134,8 +148,6 @@ start_aether_wg() {
     fi
 
     echo "Starting Aether WireGuard from $AETHER_WG_SCRIPT..."
-
-    # th.sh must use exec so this PID tracks the Aether process.
     sh "$AETHER_WG_SCRIPT" &
     AETHER_WG_PID=$!
 
@@ -155,7 +167,12 @@ stop_aether_wg() {
 }
 
 restart_aether_wg() {
-    echo "Manual Aether WireGuard restart requested..."
+    [ "$ENABLE_PWR_AETHER_WG" = "1" ] || {
+        echo "Aether WireGuard is disabled."
+        return 0
+    }
+
+    echo "Restarting Aether WireGuard..."
     stop_aether_wg
     sleep 1
     start_aether_wg
@@ -163,19 +180,31 @@ restart_aether_wg() {
 
 # ---------------- Startup ----------------
 
-echo "Starting SNI..."
-jq -e 'type == "object" and (.listeners | type == "array")' \
-    /etc/xray/pconfig.json >/dev/null
-start_sni
-
 echo "Starting Xray..."
 start_xray
 
-echo "Starting Aether Psiphon..."
-start_aether
+if [ "$ENABLE_USR2_SNI" = "1" ]; then
+    echo "SNI enabled."
+    jq -e 'type == "object" and (.listeners | type == "array")' \
+        /etc/xray/pconfig.json >/dev/null
+    start_sni
+else
+    echo "SNI disabled."
+fi
 
-echo "Starting Aether WireGuard..."
-start_aether_wg
+if [ "$ENABLE_HUP_AETHER_PSIPHON" = "1" ]; then
+    echo "Aether Psiphon enabled."
+    start_aether
+else
+    echo "Aether Psiphon disabled."
+fi
+
+if [ "$ENABLE_PWR_AETHER_WG" = "1" ]; then
+    echo "Aether WireGuard enabled."
+    start_aether_wg
+else
+    echo "Aether WireGuard disabled."
+fi
 
 echo "Starting Nginx..."
 nginx -g "daemon off;" &
@@ -211,17 +240,37 @@ trap cleanup EXIT
 trap 'exit 143' TERM
 trap 'exit 130' INT
 trap 'restart_xray || true' USR1
-trap 'restart_sni || true' USR2
-trap 'restart_aether || true' HUP
-trap 'restart_aether_wg || true' PWR
+
+if [ "$ENABLE_USR2_SNI" = "1" ]; then
+    trap 'restart_sni || true' USR2
+fi
+
+if [ "$ENABLE_HUP_AETHER_PSIPHON" = "1" ]; then
+    trap 'restart_aether || true' HUP
+fi
+
+if [ "$ENABLE_PWR_AETHER_WG" = "1" ]; then
+    trap 'restart_aether_wg || true' PWR
+fi
 
 # ---------------- Monitor ----------------
 
-while kill -0 "$XRAY_PID" 2>/dev/null &&
-      kill -0 "$SNI_PID" 2>/dev/null &&
-      kill -0 "$AETHER_PID" 2>/dev/null &&
-      kill -0 "$AETHER_WG_PID" 2>/dev/null &&
-      kill -0 "$NGINX_PID" 2>/dev/null; do
+while :; do
+    kill -0 "$XRAY_PID" 2>/dev/null || break
+    kill -0 "$NGINX_PID" 2>/dev/null || break
+
+    if [ "$ENABLE_USR2_SNI" = "1" ]; then
+        kill -0 "$SNI_PID" 2>/dev/null || break
+    fi
+
+    if [ "$ENABLE_HUP_AETHER_PSIPHON" = "1" ]; then
+        kill -0 "$AETHER_PID" 2>/dev/null || break
+    fi
+
+    if [ "$ENABLE_PWR_AETHER_WG" = "1" ]; then
+        kill -0 "$AETHER_WG_PID" 2>/dev/null || break
+    fi
+
     sleep 2 || true
 done
 
