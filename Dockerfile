@@ -24,7 +24,7 @@ COPY cotten/slipnet-linux-amd64 /usr/local/bin/slipnet
 
 RUN chmod +x /usr/local/bin/cotten /usr/local/bin/slipnet
 RUN curl -fL \
-    https://github.com/CluvexStudio/Aether/releases/download/v2.3.0/aether-linux-x86_64-musl.tar.gz \
+    https://github.com/CluvexStudio/Aether/releases/download/v2.4.0/aether-linux-x86_64-musl.tar.gz \
     -o /tmp/aether.tar.gz \
     && mkdir -p /usr/local/bin/pt \
     && tar -xzf /tmp/aether.tar.gz -C /tmp \
