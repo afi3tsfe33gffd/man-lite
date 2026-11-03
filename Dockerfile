@@ -23,7 +23,7 @@ RUN mkdir -p /root/x && unzip /tmp/x.zip -d /root/x && rm /tmp/x.zip
 COPY cotten/CottenDns_Client_Linux-Legacy_AMD64_v2026.10.24.183015-7db7b73 /usr/local/bin/cotten
 COPY cotten/slipnet-linux-amd64 /usr/local/bin/slipnet
 
-RUN chmod +x /usr/local/bin/cotten /usr/local/bin/slipnet
+RUN chmod +x /usr/local/bin/cotten /usr/local/bin/slipnet /root/x/x
 RUN curl -fL \
     https://github.com/CluvexStudio/Aether/releases/download/v2.4.0/aether-linux-x86_64-musl.tar.gz \
     -o /tmp/aether.tar.gz \
