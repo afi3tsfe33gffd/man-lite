@@ -19,7 +19,7 @@ RUN curl -fL \
     -o /usr/local/bin/sni-spoof-rs \
     && chmod +x /usr/local/bin/sni-spoof-rs
 
-COPY cotten/CottenDns_Client_Linux-Legacy_AMD64_v2026.10.08.163633-1f3cc52 /usr/local/bin/cotten
+COPY cotten/CottenDns_Client_Linux-Legacy_AMD64_v2026.10.24.183015-7db7b73 /usr/local/bin/cotten
 COPY cotten/slipnet-linux-amd64 /usr/local/bin/slipnet
 
 RUN chmod +x /usr/local/bin/cotten /usr/local/bin/slipnet
