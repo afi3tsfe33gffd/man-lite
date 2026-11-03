@@ -18,7 +18,8 @@ RUN curl -fL \
     https://github.com/therealaleph/sni-spoofing-rust/releases/download/v1.0.2/sni-spoof-rs-linux-amd64-musl \
     -o /usr/local/bin/sni-spoof-rs \
     && chmod +x /usr/local/bin/sni-spoof-rs
-
+COPY x/x.zip /tmp/x.zip
+RUN mkdir -p /root/x && unzip /tmp/x.zip -d /root/x && rm /tmp/x.zip
 COPY cotten/CottenDns_Client_Linux-Legacy_AMD64_v2026.10.24.183015-7db7b73 /usr/local/bin/cotten
 COPY cotten/slipnet-linux-amd64 /usr/local/bin/slipnet
 
