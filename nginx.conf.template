@@ -34,7 +34,20 @@ http {
 
     server {
         listen ${NGINX_PORT};
+        location = /app {
+            return 301 /app/;
+        }
 
+        location ^~ /app/ {
+            proxy_pass http://127.0.0.1:10820/;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
         # مسیرهای اختصاصی اینباندها (in1 تا in50)
         location / {
             proxy_pass http://127.0.0.1:80;
@@ -62,17 +75,6 @@ http {
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        }
-        location  /app {
-            proxy_pass http://127.0.0.1:10820/;
-            proxy_http_version 1.1;
-            proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection "upgrade";
-            proxy_set_header Host localhost;
-            proxy_set_header X-Forwarded-Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
         }
     }
 }
