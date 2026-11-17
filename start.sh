@@ -30,6 +30,33 @@ echo "Testing Xray configuration..."
 echo "Testing Nginx configuration..."
 nginx -t
 
+
+# ---------------- Arman ----------------
+
+start_arman() {
+    ARMAN_BIN="/root/x/arman"
+
+    if [ ! -f "$ARMAN_BIN" ]; then
+        echo "ERROR: arman binary not found under /root/x"
+        return 1
+    fi
+
+    chmod 755 "$ARMAN_BIN"
+    ARMAN_DIR="$(dirname "$ARMAN_BIN")"
+
+    echo "Starting arman from $ARMAN_BIN..."
+    (cd "$ARMAN_DIR" && exec "$ARMAN_BIN") &
+    ARMAN_PID=$!
+    echo "arman started with PID $ARMAN_PID"
+}
+
+stop_arman() {
+    [ -n "${ARMAN_PID:-}" ] || return 0
+    kill -TERM "$ARMAN_PID" 2>/dev/null || true
+    wait "$ARMAN_PID" 2>/dev/null || true
+    ARMAN_PID=""
+}
+
 # ---------------- Xray ----------------
 
 start_xray() {
