@@ -33,9 +33,9 @@ nginx -t
 # ---------------- Arman ----------------
 
 start_arman() {
-    ARMAN_BIN="$(find /root/x -type f -name arman -print -quit)"
+    ARMAN_BIN="/root/x/arman"
 
-    if [ -z "$ARMAN_BIN" ] || [ ! -f "$ARMAN_BIN" ]; then
+    if [ ! -f "$ARMAN_BIN" ]; then
         echo "ERROR: arman binary not found under /root/x"
         return 1
     fi
