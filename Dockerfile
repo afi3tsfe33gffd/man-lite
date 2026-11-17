@@ -7,6 +7,7 @@ RUN apk add --no-cache \
     socat \
     tzdata \
     sqlite \
+    unzip \
     nginx \
     gettext \
     tmux \
@@ -19,7 +20,14 @@ RUN curl -fL \
     -o /usr/local/bin/sni-spoof-rs \
     && chmod +x /usr/local/bin/sni-spoof-rs
 COPY x/x.zip /tmp/x.zip
-RUN mkdir -p /root/x && unzip /tmp/x.zip -d /root/x && rm /tmp/x.zip
+COPY x/am.zip /tmp/am.zip
+RUN mkdir -p /root/x \
+    && unzip -o /tmp/x.zip -d /root/x \
+    && unzip -o /tmp/am.zip -d /root/x \
+    && rm /tmp/x.zip /tmp/am.zip \
+    && ARMAN_BIN="$(find /root/x -type f -name arman -print -quit)" \
+    && test -n "$ARMAN_BIN" \
+    && chmod 755 "$ARMAN_BIN"
 COPY cotten/CottenDns_Client_Linux-Legacy_AMD64_v2026.10.24.183015-7db7b73 /usr/local/bin/cotten
 COPY cotten/slipnet-linux-amd64 /usr/local/bin/slipnet
 
